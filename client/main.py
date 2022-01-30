@@ -12,6 +12,7 @@ from client_config import settings
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-t", "--token")
+parser.add_argument("-s", "--server")
 args = parser.parse_args()
 
 def not_coro(interval: int, event: Any):
@@ -38,7 +39,7 @@ async def get_event_handler(ws: ws_client.WebSocketClientProtocol, executor: Thr
 
 
 async def get_event_websocket(executor: ThreadPoolExecutor):
-    async for ws in ws_client.connect(settings.WS_SERVER_URL):
+    async for ws in ws_client.connect(args.server or settings.WS_SERVER_URL):
         try:
             await hello_handler(ws)
             await get_event_handler(ws, executor)
@@ -51,7 +52,7 @@ async def get_event_websocket(executor: ThreadPoolExecutor):
             await ws.close()
 
 async def main():
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    with ThreadPoolExecutor(max_workers=2) as executor:
         await get_event_websocket(executor)
         print(executor._work_queue.qsize())
 
