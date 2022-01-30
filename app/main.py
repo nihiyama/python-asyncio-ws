@@ -1,6 +1,9 @@
+import asyncio
+from time import sleep
 from typing import Any, Dict, Optional
 import json
 
+from broadcaster import Broadcast 
 from websockets.legacy import client as ws_client
 from fastapi import FastAPI, WebSocket, BackgroundTasks, Body, status
 
@@ -8,32 +11,12 @@ from config import settings
 
 app = FastAPI()
 
-clients = {}
+broadcast = Broadcast("redis://redis:6379")
 
-# clients = {
-#     "sec-client-key1": {
-#         "token": "changeme",
-#         "ws": "ws"
-#     },
-#     "sec-client-key2": {
-#         "token": "changeme",
-#         "ws": "ws"
-#     },
-#     "sec-client-key3": {
-#         "token": "changeme",
-#         "ws": "ws"
-#     },
-#     "sec-client-key4": {
-#         "token": "changeme",
-#         "ws": "ws"
-#     },
-# }
 
 @app.websocket("/events/ws")
 async def event_handler(ws: WebSocket):
     await ws.accept()
-    key = ws.headers.get("sec-websocket-key")
-    clients[key] = {}
     try:
         while True:
             data: Dict[str, Any] = await ws.receive_json()
@@ -43,44 +26,44 @@ async def event_handler(ws: WebSocket):
                     req_data = {
                         "message": "hello!",
                     }
-                    clients[key] = {
-                        "token": token,
-                        "ws": ws
-                    }
-                    json.dumps(req_data)
                     await ws.send_json(req_data)
-                else:
-                    req_data = {
-                        "message": "token invalid error!",
-                        "is_err": True
-                    }
-                    await ws.send_json(req_data)
-            elif data.get("message") == "event" and data.get("key") == settings.WS_SERVER_KEY:
-                event_id: Optional[int] = data.get("event_id")
-                token: Optional[str] = data.get("token")
-                if event_id is not None and token is not None:
-                    for c in clients:
-                        if clients[c]["token"] == token:
-                            req_data = {
-                                "event_id": event_id,
-                                "message": "put your event"
-                            }
-                            c_ws: WebSocket = clients[c]["ws"]
-                            await c_ws.send_json(req_data)
-    except Exception as e:
+                    print("001")
+                    async with broadcast.subscribe(channel=token, ws=ws) as subscriber:
+                        # subscriber_task = asyncio.create_task(subscriber)
+                        # ws_task = asyncio.create_task(ws)
+                        # done, pending = await asyncio.wait(
+                        #     {ws_task},
+                        #     return_when=asyncio.FIRST_COMPLETED
+                        # )
+                        # for task in pending:
+                        #     task.cancel()
+                        print("002")
+                        async for event in subscriber:   
+                            message: Dict[str, Any] = json.loads(event.message)
+                            if message.get("key") == settings.WS_SERVER_KEY:
+                                req_data = {
+                                    "event_id": message.get("event_id"),
+                                    "message": message.get("message")
+                                }
+                                await ws.send_json(req_data)                   
+    except Exception:
+        # print(e)
+        # if subscriber is not None:
+        #     del subscriber
         await ws.close()
-        del clients[key]
 
 
 async def create_event_task(event_id: int, token: str):
-    async with ws_client.connect(settings.WS_SERVER_URL) as ws:
-        req_data = {
-            "token": token,
-            "event_id": event_id,
-            "message": "event",
-            "key": settings.WS_SERVER_KEY
-        }
-        await ws.send(json.dumps(req_data))
+    req_data = {
+        "event_id": event_id,
+        "message": "your event",
+        "key": settings.WS_SERVER_KEY
+    }
+    try:
+        aaa = await broadcast.publish(channel=token, message=json.dumps(req_data))
+        print(aaa)
+    except Exception as e:
+        print("bbb", e)
 
 
 @app.post("/events/", status_code=status.HTTP_202_ACCEPTED)
@@ -94,3 +77,7 @@ async def creata_event(
     return {
         "detail": "Accepted!"
     }
+
+@app.on_event("startup")
+async def startup_event():
+    await broadcast.connect()

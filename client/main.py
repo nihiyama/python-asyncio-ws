@@ -19,6 +19,7 @@ async def hello_handler(ws: ws_client.WebSocketClientProtocol):
     }
     await ws.send(json.dumps(req_data))
     res_data: Dict[str, Any] = json.loads(await ws.recv())
+    print(res_data)
     if res_data.get("is_err"):
         raise ws_exceptions.SecurityError(f"token invalid error, {res_data}")
 
@@ -37,10 +38,12 @@ async def main():
             await hello_handler(ws)
             await get_event_handler(ws)
         except ws_exceptions.ConnectionClosed:
-            await asyncio.sleep(10)
+            await asyncio.sleep(3)
             continue
         except Exception as e:
             break
+        finally:
+            await ws.close()
 
 if __name__ == "__main__":
     asyncio.run(main())

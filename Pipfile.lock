@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "16d9305bbc96ac5fc30d039e7aaf398965bf29bbdf787f9f5402d9d609361316"
+            "sha256": "8aafb4ea916859604f4a187d4470d151603f22af16e95883a71e99f808799d4e"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -32,6 +32,24 @@
             "markers": "python_version >= '3.7'",
             "version": "==3.5.0"
         },
+        "asyncio-redis": {
+            "hashes": [
+                "sha256:4a134fde5ea3628ff0c7118e2424b0f26140a1bd21d5e4632058f1f662773686",
+                "sha256:ff8ce4e7e22a08e2688ae6b397aeac355473e343ce3c68ae3b713494318d848b"
+            ],
+            "version": "==0.16.0"
+        },
+        "broadcaster": {
+            "extras": [
+                "redis"
+            ],
+            "hashes": [
+                "sha256:50f93d1af7e9097a87ef3b2da269b4b4c5630ec080dc5c7f941ef314291937b1",
+                "sha256:72056f9b77b091dd4bbad4d7484bd0e6835c3443d4564d0bbf41190c29c606c6"
+            ],
+            "index": "pypi",
+            "version": "==0.2.0"
+        },
         "certifi": {
             "hashes": [
                 "sha256:78884e7c1d4b00ce3cea67b44566851c4343c120abd683433ce934a68ea58872",
@@ -60,7 +78,7 @@
                 "sha256:081649da27ced5e75709a1ee542136eaba9842a0fe4c03da4fb0a3d3ed1f3c44",
                 "sha256:e79351e032d0b606b98d38a4b0e6e2275b31a5b85c873e587cc11b73aca026d6"
             ],
-            "markers": "python_version >= '3.6' and python_version < '4.0'",
+            "markers": "python_version >= '3.6' and python_version < '4'",
             "version": "==2.2.0"
         },
         "email-validator": {
@@ -416,7 +434,7 @@
                 "sha256:000ca7f471a233c2251c6c7023ee85305721bfdf18621ebff4fd17a8653427ed",
                 "sha256:0e7c33d9a63e7ddfcb86780aac87befc2fbddf46c58dbb487e0855f7ceec283c"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4.0'",
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4' and python_version < '4'",
             "version": "==1.26.8"
         },
         "uvicorn": {
